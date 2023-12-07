@@ -13,9 +13,16 @@ const ort = require("onnxruntime-web");
 /* @ts-ignore */
 import npyjs from "npyjs";
 import axios from "axios";
+import Navbar from "./components/frontend/navbar";
+import Sidebar from "./components/frontend/sidebar";
+import UploadImage from "./components/frontend/uploadImage";
 
-const IMAGE_PATH = "/assets/data/dasd.jpg";
-const IMAGE_EMBEDDING = "/assets/data/embed.npy";
+
+// C:\Users\Administrator\Documents\GitHub\demo\src\assets\data\image-1701929063924.png
+
+// C:\Users\Administrator\Documents\GitHub\demo\src\assets\data\npyFile-1701929103139.npy
+const IMAGE_PATH = "/assets/data/image-1701938880828.jpg";
+const IMAGE_EMBEDDING = "/assets/data/npyFile-1701938918543.npy";
 const MODEL_DIR = "/model/sam_onnx_quantized_example.onnx";
 
 const App = () => {
@@ -150,6 +157,13 @@ const App = () => {
 
   return (
     <>
+
+   <Navbar/>
+     <div className='flex'>
+     <Sidebar/>
+     <UploadImage />
+     </div>
+
       <Upload
         beforeUpload={handleUpload}
         showUploadList={false}

@@ -21,6 +21,7 @@
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@types/underscore": "^1.11.4",
+    "@types/webpack-env": "^1.18.4",
     "@typescript-eslint/eslint-plugin": "^5.35.1",
     "@typescript-eslint/parser": "^5.35.1",
     "babel-loader": "^8.2.5",
@@ -52,8 +53,12 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@material-tailwind/react": "^2.1.5",
     "antd": "^5.11.5",
     "axios": "^1.6.2",
+    "express": "^4.18.2",
+    "idb": "^8.0.0",
+    "mongoose": "^8.0.2",
     "npyjs": "^0.4.0",
     "onnxruntime-web": "^1.14.0",
     "react": "^18.2.0",

@@ -17,7 +17,9 @@
     "useDefineForClassFields": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist/",
-    "sourceMap": true
+    "sourceMap": true,
+    "typeRoots": ["node_modules/@types"],
+    "types": ["node", "react", "react-dom", "webpack-env"],
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src"],
   "exclude": ["node_modules"]
