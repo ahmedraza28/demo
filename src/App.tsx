@@ -21,8 +21,28 @@ import UploadImage from "./components/frontend/uploadImage";
 // C:\Users\Administrator\Documents\GitHub\demo\src\assets\data\image-1701929063924.png
 
 // C:\Users\Administrator\Documents\GitHub\demo\src\assets\data\npyFile-1701929103139.npy
-const IMAGE_PATH = "/assets/data/image-1701938880828.jpg";
+const IMAGE_PATH = "https://weshop-backend.onrender.com/files/image/image-1701946614737.jpg";
 const IMAGE_EMBEDDING = "/assets/data/npyFile-1701938918543.npy";
+
+
+
+// async function fetchResources() {
+//   try {
+//     const imageResponse = await axios.get(IMAGE_PATH);
+//     const embeddingResponse = await axios.get(IMAGE_EMBEDDING);
+
+//     // You can now access the data from the responses using imageResponse.data and embeddingResponse.data
+
+//     console.log('Image Data:', imageResponse.data);
+//     console.log('Embedding Data:', embeddingResponse.data);
+//   } catch (error) {
+//     console.error('Error fetching resources:', error);
+//   }
+// }
+
+// // Call the async function to fetch resources
+// fetchResources();
+
 const MODEL_DIR = "/model/sam_onnx_quantized_example.onnx";
 
 const App = () => {
