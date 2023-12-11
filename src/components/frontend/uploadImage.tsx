@@ -1,7 +1,11 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import TextDescription from './textdescription';
 import axios from 'axios';
+import { useNavigate    } from 'react-router-dom'; 
 import { openDB } from 'idb';
+import Edit from '../../Edit';
+
+
 
 interface CardDimensions {
   width: number;
@@ -107,53 +111,83 @@ const UploadImage: React.FC = () => {
       reader.readAsArrayBuffer(blob);
     });
   }
+ 
+  const navigate = useNavigate();
+
+  const handleEditButtonClick = () => {
+    // Navigate to the current location (in this case, App.tsx)
+    navigate('../../Edit');
+  };
   
   return (
     <div>
       <div className="flex">
-        <div className="flex items-center justify-center w-full mt-10 ml-5">
-          <label
-            htmlFor="dropzone-file"
-            className={`flex flex-col items-center justify-center w-[${cardDimensions.width}px] h-[${cardDimensions.height}px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600`}
-          >
-            {selectedFile && (
-              <img
-                src={URL.createObjectURL(selectedFile)}
-                alt="Selected"
-                className="w-full h-full rounded-lg"
-              />
-            )}
-            {!selectedFile && (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="#7530fe"
-                  className="w-6 h-6"
-                >
-                  {/* Your SVG path here */}
-                </svg>
-                <p className="mb-2 text-sm text-[#7530fe] text-500 dark:text-[#7530fe]">
-                  <span className="font-semibold">Upload Image</span>
-                </p>
-                <p>Drag and drop file here or upload here</p>
-                <p className="text-xs text-gray-300 dark:text-gray-400">
-                  Size should not exceed 10MB, aspect ratio should be less than
-                  2, and GIF format is not supported
-                </p>
-              </>
-            )}
-          </label>
-          <input
-            id="dropzone-file"
-            type="file"
-            className="hidden"
-            onChange={handleFileChange}
-            accept="image/*"
-          />
-        </div>
+      <div className="flex items-center justify-center w-full mt-10 ml-5">
+  <label
+    htmlFor="dropzone-file"
+    className={`flex flex-col items-center justify-center w-[400px] h-[400px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600`}
+  >
+    {selectedFile && (
+      <img
+        src={URL.createObjectURL(selectedFile)}
+        alt="Selected"
+        className="w-full h-full rounded-lg"
+      />
+    )}
+    {!selectedFile && (
+      <>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="#7530fe"
+          className="w-6 h-6"
+        >
+          {/* Your SVG path here */}
+        </svg>
+        <p className="mb-2 text-sm text-[#7530fe] text-500 dark:text-[#7530fe]">
+          <span className="font-semibold">Upload Image</span>
+        </p>
+        <p>Drag and drop file here or upload here</p>
+        <p className="text-xs text-gray-300 dark:text-gray-400">
+          Size should not exceed 10MB, aspect ratio should be less than
+          2, and GIF format is not supported
+        </p>
+      </>
+    )}
+  </label>
+  <input
+    id="dropzone-file"
+    type="file"
+    className="hidden"
+    onChange={handleFileChange}
+    accept="image/*"
+  />
+</div>
+
+<div className="flex items-center justify-center w-full mt-10 ml-5">
+  <div
+    className="flex flex-col items-center justify-center w-[400px] h-[400px] border-2 border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+   
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="#7530fe"
+      className="w-6 h-6 mb-2"
+    >
+      {/* Your SVG path for the edit icon here */}
+    </svg>
+    <p className="text-sm text-[#7530fe] text-500 dark:text-[#7530fe]">
+    <button className="font-semibold" onClick={handleEditButtonClick}>
+        Edit File
+      </button>
+    </p>
+  </div>
+</div>
       </div>
       <TextDescription />
     </div>
