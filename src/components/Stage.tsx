@@ -10,6 +10,8 @@ import Tool from "./Tool";
 import { modelInputProps } from "./helpers/Interfaces";
 import AppContext from "./hooks/createContext";
 
+// ... (previous code)
+
 const Stage = () => {
   const {
     clicks: [, setClicks],
@@ -33,7 +35,10 @@ const Stage = () => {
     x *= imageScale;
     y *= imageScale;
     const click = getClick(x, y);
-    if (click) setClicks([click]);
+    if (click) {
+      setClicks([click]);
+      console.log(`Masking Coordinates: x=${x}, y=${y}`);
+    }
   }, 15);
 
   const flexCenterClasses = "flex items-center justify-center";

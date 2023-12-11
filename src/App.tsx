@@ -26,22 +26,6 @@ const IMAGE_EMBEDDING = "/assets/data/npyFile-1701938918543.npy";
 
 
 
-// async function fetchResources() {
-//   try {
-//     const imageResponse = await axios.get(IMAGE_PATH);
-//     const embeddingResponse = await axios.get(IMAGE_EMBEDDING);
-
-//     // You can now access the data from the responses using imageResponse.data and embeddingResponse.data
-
-//     console.log('Image Data:', imageResponse.data);
-//     console.log('Embedding Data:', embeddingResponse.data);
-//   } catch (error) {
-//     console.error('Error fetching resources:', error);
-//   }
-// }
-
-// // Call the async function to fetch resources
-// fetchResources();
 
 const MODEL_DIR = "/model/sam_onnx_quantized_example.onnx";
 
@@ -58,32 +42,6 @@ const App = () => {
   const [imagePath, setImagePath] = useState<string | null>(IMAGE_PATH);
   const [modelScale, setModelScale] = useState<modelScaleProps | null>(null);
 
-  const handleUpload = async (file: File, FileList: File[]): Promise<boolean> => {
-    try {
-      console.log("Uploading file...");
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      
-      const response = await axios.post("http://localhost:5000/upload", formData);
-
-      if (response.status === 200) {
-        const data = response.data;
-        const newImagePath = data.filePath;
-        setImagePath(newImagePath);
-        setIsModalVisible(true);
-        console.log("File uploaded successfully!");
-        return true;
-      } else {
-        console.error("Error while uploading file:", response.status);
-      }
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    }
-
-    return false;
-  };
 
   useEffect(() => {
     const initModel = async () => {
@@ -169,6 +127,7 @@ const App = () => {
         const output = results[model.outputNames[0]];
 
         setMaskImg(onnxMaskToImage(output.data, output.dims[2], output.dims[3]));
+        
       }
     } catch (error) {
       console.error("Error running ONNX model:", error);
@@ -184,24 +143,7 @@ const App = () => {
      <UploadImage />
      </div>
 
-      {/* <Upload
-        beforeUpload={handleUpload}
-        showUploadList={false}
-      >
-        <button>
-          <UploadOutlined /> Click to Upload
-        </button>
-      </Upload>
-      <Modal
-        title="Uploaded Image"
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={null}
-        centered
-      >
-        {uploadedImage && <img src={uploadedImage} alt="Uploaded" />}
-      </Modal>
-      <Stage /> */}
+      <Stage />
     </>
   );
 };
