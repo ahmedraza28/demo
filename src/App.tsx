@@ -41,7 +41,7 @@ const App = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [imagePath, setImagePath] = useState<string | null>(IMAGE_PATH);
   const [modelScale, setModelScale] = useState<modelScaleProps | null>(null);
-
+  const aiApiUrl = 'https://b2skbfxx-8000.euw.devtunnels.ms/process_image'; // Your AI API URL
 
   useEffect(() => {
     const initModel = async () => {
@@ -141,11 +141,19 @@ const App = () => {
      <div className='flex'>
      <Sidebar/>
      <UploadImage />
+     
+      
+   
+     
+   
      </div>
 
-      <Stage />
+  
     </>
   );
 };
 
 export default App;
+
+
+ //  aiApiUrl={aiApiUrl} />

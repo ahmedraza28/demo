@@ -40,11 +40,11 @@ const UploadImage: React.FC = () => {
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
+  
     if (file) {
       const image = new Image();
       image.src = URL.createObjectURL(file);
-
+  
       image.onload = async () => {
         if (
           image.width >= 512 &&
@@ -52,15 +52,15 @@ const UploadImage: React.FC = () => {
           image.width / image.height < 2
         ) {
           setSelectedFile(file);
-
+  
           setCardDimensions({
             width: Math.min(image.width, cardDimensions.width),
             height: Math.min(image.height, cardDimensions.height),
           });
-
+  
           const formData = new FormData();
           formData.append('file', file);
-
+  
           try {
             const response = await axios.post(
               aiApiUrl,
@@ -69,23 +69,58 @@ const UploadImage: React.FC = () => {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },
-                responseType: 'blob' // Request the response as a Blob
+                responseType: 'blob', // Request the response as a Blob
               }
             );
-      
+  
             if (response.status === 200) {
               const responseData = response.data;
               const db = await initDB();
-      
+  
               // Save the Blob in IndexedDB
               const tx = db.transaction('files', 'readwrite');
               const store = tx.objectStore('files');
               const fileKey = await store.add({ file: responseData });
               console.log('Saved file with key:', fileKey);
-
+  
               // Read and log the ArrayBuffer from the Blob
               const arrayBuffer = await readBlobAsArrayBuffer(responseData);
               console.log('ArrayBuffer:', arrayBuffer);
+  
+              // Save the image and .npy file to the public folder
+              const imageFileName = `uploadedImage_${Date.now()}.png`;
+              const npyFileName = `uploadedImage_${Date.now()}.npy`;
+  
+              // Create a Blob from the ArrayBuffer
+              const imageBlob = new Blob([arrayBuffer], { type: 'image/png' });
+              const npyBlob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+  
+              // Create URLs for the Blobs
+              const imageURL = URL.createObjectURL(imageBlob);
+              const npyURL = URL.createObjectURL(npyBlob);
+  
+              // Create a link element to trigger the download
+              const imageLink = document.createElement('a');
+              const npyLink = document.createElement('a');
+  
+              // Set link properties
+              imageLink.href = imageURL;
+              imageLink.download = imageFileName;
+  
+              npyLink.href = npyURL;
+              npyLink.download = npyFileName;
+  
+              // Append the link to the document
+              document.body.appendChild(imageLink);
+              document.body.appendChild(npyLink);
+  
+              // Trigger the download
+              imageLink.click();
+              npyLink.click();
+  
+              // Remove the link elements
+              document.body.removeChild(imageLink);
+              document.body.removeChild(npyLink);
             } else {
               console.error('API Error:', response.statusText);
             }
@@ -102,7 +137,7 @@ const UploadImage: React.FC = () => {
       };
     }
   };
-
+  
   function readBlobAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
