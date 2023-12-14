@@ -1,11 +1,8 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import TextDescription from './textdescription';
 import axios from 'axios';
-import { useNavigate    } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import { openDB } from 'idb';
-import Edit from '../../Edit';
-
-
 
 interface CardDimensions {
   width: number;
@@ -40,11 +37,11 @@ const UploadImage: React.FC = () => {
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-  
+
     if (file) {
       const image = new Image();
       image.src = URL.createObjectURL(file);
-  
+
       image.onload = async () => {
         if (
           image.width >= 512 &&
@@ -52,15 +49,15 @@ const UploadImage: React.FC = () => {
           image.width / image.height < 2
         ) {
           setSelectedFile(file);
-  
+
           setCardDimensions({
             width: Math.min(image.width, cardDimensions.width),
             height: Math.min(image.height, cardDimensions.height),
           });
-  
+
           const formData = new FormData();
           formData.append('file', file);
-  
+
           try {
             const response = await axios.post(
               aiApiUrl,
@@ -69,58 +66,33 @@ const UploadImage: React.FC = () => {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },
-                responseType: 'blob', // Request the response as a Blob
+                responseType: 'blob',
               }
             );
-  
+
             if (response.status === 200) {
               const responseData = response.data;
               const db = await initDB();
-  
+
               // Save the Blob in IndexedDB
               const tx = db.transaction('files', 'readwrite');
               const store = tx.objectStore('files');
               const fileKey = await store.add({ file: responseData });
               console.log('Saved file with key:', fileKey);
-  
+
               // Read and log the ArrayBuffer from the Blob
               const arrayBuffer = await readBlobAsArrayBuffer(responseData);
               console.log('ArrayBuffer:', arrayBuffer);
-  
-              // Save the image and .npy file to the public folder
-              const imageFileName = `uploadedImage_${Date.now()}.png`;
-              const npyFileName = `uploadedImage_${Date.now()}.npy`;
-  
-              // Create a Blob from the ArrayBuffer
-              const imageBlob = new Blob([arrayBuffer], { type: 'image/png' });
-              const npyBlob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
-  
-              // Create URLs for the Blobs
-              const imageURL = URL.createObjectURL(imageBlob);
-              const npyURL = URL.createObjectURL(npyBlob);
-  
-              // Create a link element to trigger the download
-              const imageLink = document.createElement('a');
-              const npyLink = document.createElement('a');
-  
-              // Set link properties
-              imageLink.href = imageURL;
-              imageLink.download = imageFileName;
-  
-              npyLink.href = npyURL;
-              npyLink.download = npyFileName;
-  
-              // Append the link to the document
-              document.body.appendChild(imageLink);
-              document.body.appendChild(npyLink);
-  
-              // Trigger the download
-              imageLink.click();
-              npyLink.click();
-  
-              // Remove the link elements
-              document.body.removeChild(imageLink);
-              document.body.removeChild(npyLink);
+
+              // Save ArrayBuffer as .npy file
+              const uint8Array = new Uint8Array(arrayBuffer);
+              const blob = new Blob([uint8Array], { type: 'application/octet-stream' });
+
+              // Save files to the public folder
+              // saveToFile(process.env.PUBLIC_URL + '/images/selectedImage.jpg', file);
+              // saveToFile(process.env.PUBLIC_URL + '/images/output.npy', blob);
+              saveToFile('public/images/selectedImage.jpg', file);
+              saveToFile('public/images/output.npy', blob);
             } else {
               console.error('API Error:', response.statusText);
             }
@@ -137,7 +109,7 @@ const UploadImage: React.FC = () => {
       };
     }
   };
-  
+
   function readBlobAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -146,12 +118,33 @@ const UploadImage: React.FC = () => {
       reader.readAsArrayBuffer(blob);
     });
   }
- 
+
   const navigate = useNavigate();
 
   const handleEditButtonClick = () => {
-    // Navigate to the current location (in this case, App.tsx)
+    // Navigate to the 'Edit' component
     navigate('../../Edit');
+  };
+
+  const saveToFile = (path: string, file: File | Blob) => {
+    const reader = new FileReader();
+    reader.onload = function () {
+      const content = reader.result as ArrayBuffer;
+      const uint8Array = new Uint8Array(content);
+      const dataBlob = new Blob([uint8Array]);
+
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(dataBlob);
+      a.download = path.substring(path.lastIndexOf('/') + 1);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Optionally, revoke the ObjectURL to free up resources
+      URL.revokeObjectURL(a.href);
+    };
+
+    reader.readAsArrayBuffer(file);
   };
   
   return (

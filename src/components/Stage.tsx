@@ -10,6 +10,7 @@ const Stage = () => {
     image: [image],
   } = useContext(AppContext)!;
 
+  
   const [coordinates, setCoordinates] = useState<Array<[number, number]>>([]);
 
   const getClick = (x: number, y: number): modelInputProps => {

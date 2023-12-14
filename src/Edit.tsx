@@ -15,8 +15,8 @@ const ort = require("onnxruntime-web");
 import npyjs from "npyjs";
 import axios from "axios";
 
-const IMAGE_PATH = "assets/data/image-1701938880828.jpg";
-const IMAGE_EMBEDDING = "/assets/data/npyFile-1701938918543.npy";
+const IMAGE_PATH = "assets/data/upload.jpeg";
+const IMAGE_EMBEDDING = "/assets/data/output.npy";
 
 
 const MODEL_DIR = "/model/sam_onnx_quantized_example.onnx";

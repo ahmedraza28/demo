@@ -30,15 +30,18 @@ mongoose.connect('mongodb+srv://admin:admin@cluster0.y8ueoox.mongodb.net/Weshopf
   });
   const File = mongoose.model('File', fileSchema);
 
-
+// C:\Users\ahmed\Documents\GitHub\demo\src\assets\data
 // Multer setup for file uploads (saving files on disk)
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'uploads/')  // 'uploads/' is the folder where files will be saved
+      cb(null, '../src/assets/data/')  // 'uploads/' is the folder where files will be saved
     },
     filename: function (req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+      cb(null, 'upload' + path.extname(file.originalname))
     }
+     // cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+       
+    //  const filename = 'upload' + path.extname(file.originalname);
   });
 
   const upload = multer({ storage: storage });
@@ -83,8 +86,9 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       // Check if the API response contains valid data
       if (externalApiResponse.status === 200 && externalApiResponse.data) {
         // Save the received data as a .npy file
-        const npyName = 'npyFile-' + Date.now() + '.npy';
-        const npyPath = path.join('uploads', npyName);
+        const npyName = 'output'+'.npy';
+        const npyPath = path.join('../src/assets/data/', npyName);
+        console.log(npyPath);
         fs.writeFileSync(npyPath, externalApiResponse.data);
   
         // Store file paths in the database
