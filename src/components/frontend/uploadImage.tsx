@@ -10,7 +10,7 @@ interface CardDimensions {
   height: number;
 }
 
-const aiApiUrl = 'https://b2skbfxx-8000.euw.devtunnels.ms/process_image/';
+
 
 const getCoordinatesFromLocalStorage = () => {
   const storedCoordinates = localStorage.getItem("coordinates");
@@ -113,11 +113,13 @@ const imageBlob = await fetch(IMAGE_PATH).then((response) => response.blob());
           });
 
           const formData = new FormData();
-          formData.append('file', file);
+          formData.append('image', file);
+// upload fom front
 
+const aiApiUrl = 'http://localhost:3000/upload/';
           try {
             const response = await axios.post(
-              aiApiUrl,
+              'http://localhost:3000/upload/',
               formData,
               {
                 headers: {
@@ -128,28 +130,30 @@ const imageBlob = await fetch(IMAGE_PATH).then((response) => response.blob());
             );
 
             if (response.status === 200) {
-              const responseData = response.data;
-              const db = await initDB();
+              console.log("successful");
+              
+              // const responseData = response.data;
+              // const db = await initDB();
 
-              // Save the Blob in IndexedDB
-              const tx = db.transaction('files', 'readwrite');
-              const store = tx.objectStore('files');
-              const fileKey = await store.add({ file: responseData });
-              console.log('Saved file with key:', fileKey);
+              // // Save the Blob in IndexedDB
+              // const tx = db.transaction('files', 'readwrite');
+              // const store = tx.objectStore('files');
+              // const fileKey = await store.add({ file: responseData });
+              // console.log('Saved file with key:', fileKey);
 
-              // Read and log the ArrayBuffer from the Blob
-              const arrayBuffer = await readBlobAsArrayBuffer(responseData);
-              console.log('ArrayBuffer:', arrayBuffer);
+              // // Read and log the ArrayBuffer from the Blob
+              // const arrayBuffer = await readBlobAsArrayBuffer(responseData);
+              // console.log('ArrayBuffer:', arrayBuffer);
 
-              // Save ArrayBuffer as .npy file
-              const uint8Array = new Uint8Array(arrayBuffer);
-              const blob = new Blob([uint8Array], { type: 'application/octet-stream' });
+              // // Save ArrayBuffer as .npy file
+              // const uint8Array = new Uint8Array(arrayBuffer);
+              // const blob = new Blob([uint8Array], { type: 'application/octet-stream' });
 
-              // Save files to the public folder
-              // saveToFile(process.env.PUBLIC_URL + '/images/selectedImage.jpg', file);
-              // saveToFile(process.env.PUBLIC_URL + '/images/output.npy', blob);
-              saveToFile('public/images/selectedImage.jpg', file);
-              saveToFile('public/images/output.npy', blob);
+              // // Save files to the public folder
+              // // saveToFile(process.env.PUBLIC_URL + '/images/selectedImage.jpg', file);
+              // // saveToFile(process.env.PUBLIC_URL + '/images/output.npy', blob);
+              // saveToFile('public/images/selectedImage.jpg', file);
+              // saveToFile('public/images/output.npy', blob);
             } else {
               console.error('API Error:', response.statusText);
             }
