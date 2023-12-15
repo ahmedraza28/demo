@@ -31,6 +31,10 @@ const Stage = () => {
       setCoordinates((prevCoordinates: [number, number][]) => {
         const newCoordinates = [...prevCoordinates, [x, y]] as [number, number][];
         setClicks([click]);
+
+        // Store newCoordinates in local storage
+      localStorage.setItem("coordinates", JSON.stringify(newCoordinates));
+      
         console.log(`Masking Coordinates: x=${x}, y=${y}`);
         console.log("Current Coordinates Array:", newCoordinates);
         return newCoordinates;
@@ -47,11 +51,14 @@ const Stage = () => {
 
   const flexCenterClasses = "flex items-center justify-center";
   return (
+    // <AppContext.Provider value={{ coordinates, setCoordinates }}>
+
     <div className={`${flexCenterClasses} w-full h-full`} onClick={handleMouseClick}>
       <div className={`${flexCenterClasses} relative w-[90%] h-[90%]`}>
         <Tool handleMouseMove={handleMouseMove} />
       </div>
     </div>
+    // </AppContext.Provider>
   );
 };
 

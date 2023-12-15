@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const sharp = require('sharp');
 const bodyParser = require('body-parser');
 const app = express();
 const path = require('path');
@@ -30,43 +31,81 @@ mongoose.connect('mongodb+srv://admin:admin@cluster0.y8ueoox.mongodb.net/Weshopf
   });
   const File = mongoose.model('File', fileSchema);
 
-// C:\Users\ahmed\Documents\GitHub\demo\src\assets\data
-// Multer setup for file uploads (saving files on disk)
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, '../src/assets/data/')  // 'uploads/' is the folder where files will be saved
-    },
-    filename: function (req, file, cb) {
-      cb(null, 'upload' + path.extname(file.originalname))
-    }
-     // cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
-       
-    //  const filename = 'upload' + path.extname(file.originalname);
-  });
-
-  const upload = multer({ storage: storage });
-
+  
 // Body-parser middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// // Update your upload endpoint
-// app.post('/upload', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'npyFile', maxCount: 1 }]), async (req, res) => {
-//   try {
-//     const newFile = new File({
-//       imageName: req.files['image'][0].originalname,
-//       imagePath: req.files['image'][0].path,
-//       npyName: req.files['npyFile'][0].originalname,
-//       npyPath: req.files['npyFile'][0].path
-//     });
-//     await newFile.save();
-//     res.send('Files uploaded and saved to server');
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send('Error occurred while saving the file');
-//   }
-// });
+// C:\Users\ahmed\Documents\GitHub\demo\src\assets\data
+// Multer setup for file uploads (saving files on disk)
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//       cb(null, '../src/assets/data/')  // 'uploads/' is the folder where files will be saved
+//     },
+//     filename: function (req, file, cb) {
+//       cb(null, 'upload' + path.extname(file.originalname))
+//     }
+//   });
 
+//   const upload = multer({ storage: storage });
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+      cb(null, '../src/assets/data/temp/')  // Temp folder for initial upload
+  },
+  filename: function (req, file, cb) {
+      // Use a temporary file name
+      cb(null, 'upload');
+  }
+});
+
+const upload = multer({ storage: storage });
+
+app.post('/upload', upload.single('image'), async (req, res) => {
+  try {
+      const tempImagePath = req.file.path;
+      const finalImagePath = path.join('../src/assets/data/', 'upload' + '.jpg');
+
+      // Convert the uploaded image to JPG format and save it to the final path
+      await sharp(tempImagePath).jpeg().toFile(finalImagePath);
+
+      // Attempt to delete the temporary file
+      try {
+          fs.unlinkSync(tempImagePath);
+      } catch (unlinkError) {
+          console.error('Error deleting temporary file:', unlinkError);
+      }
+
+      // Create form-data for the external request
+      const formData = new FormData();
+      formData.append('file', fs.createReadStream(finalImagePath));
+
+      // Send the request to the external API
+      const externalApiResponse = await axios.post('https://b2skbfxx-8000.euw.devtunnels.ms/process_image/', formData, {
+          headers: formData.getHeaders(),
+          responseType: 'arraybuffer',
+      });
+
+      // Check if the API response contains valid data
+      if (externalApiResponse.status === 200 && externalApiResponse.data) {
+          // Save the received data as a .npy file
+          const npyName = 'output.npy';
+          const npyPath = path.join('../src/assets/data/', npyName);
+          fs.writeFileSync(npyPath, externalApiResponse.data);
+
+          // const imgPath = 'https://weshop-backend.onrender.com/files/image/' + path.basename(imagePath);
+          // const nyPath = 'https://weshop-backend.onrender.com/files/npy/' + path.basename(npyPath);
+
+          // res.send(`${imgPath} image path, ${nyPath} npy path`);
+          res.send("successful")
+      } else {
+          res.status(400).send('Invalid response from the external API');
+      }
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Error occurred while processing the file');
+  }
+});
 
 app.post('/upload', upload.single('image'), async (req, res) => {
     try {
@@ -114,37 +153,6 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       res.status(500).send('Error occurred while processing the file');
     }
   });
-// app.post('/upload', upload.single('image'), async (req, res) => {
-//     try {
-//       const imagePath = req.file.path;
-  
-//       // Create form-data for the external request
-//       const formData = new FormData();
-//       formData.append('file', fs.createReadStream(imagePath));
-  
-//       // Send the request to the external API
-//       const externalApiResponse = await axios.post('https://b2skbfxx-8000.euw.devtunnels.ms/process_image/', formData, {
-//         headers: formData.getHeaders(),
-//         responseType: 'arraybuffer', // Set the response type to 'arraybuffer'
-//       });
-  
-//       // Check if the API response contains valid data
-//       if (externalApiResponse.status === 200 && externalApiResponse.data) {
-//         // Set response headers for the .npy file attachment
-//         const npyName = 'npyFile-' + Date.now() + '.npy';
-//         res.setHeader('Content-Disposition', `attachment; filename=${npyName}`);
-//         res.setHeader('Content-Type', 'application/octet-stream'); // Change to the appropriate content type for .npy files
-  
-//         // Send the .npy file as an attachment
-//         res.send(Buffer.from(externalApiResponse.data, 'binary'));
-//       } else {
-//         res.status(400).send('Invalid response from the external API');
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).send('Error occurred while processing the file');
-//     }
-//   });
 
 app.get('/files', async (req, res) => {
     try {

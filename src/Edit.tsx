@@ -15,7 +15,7 @@ const ort = require("onnxruntime-web");
 import npyjs from "npyjs";
 import axios from "axios";
 
-const IMAGE_PATH = "assets/data/upload.jpeg";
+const IMAGE_PATH = "assets/data/upload.jpg";
 const IMAGE_EMBEDDING = "/assets/data/output.npy";
 
 
@@ -137,6 +137,7 @@ const Edit = () => {
     
       </Modal>
       <Stage />
+
     </>
   );
 };
