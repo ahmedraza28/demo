@@ -31,7 +31,7 @@ const UploadImage: React.FC = () => {
       // const input_points = JSON.stringify(getCoordinatesFromLocalStorage)
  
   const [userInput, setUserInput] = useState<string>(''); 
-  const IMAGE_PATH = "../../assets/data/upload.jpeg";
+  const IMAGE_PATH = "../../assets/data/upload.jpg";
   console.log(IMAGE_PATH , "iMMAGE PATH");
   
   const handleGenerateClick = async () => {
@@ -50,7 +50,7 @@ const imageBlob = await fetch(IMAGE_PATH).then((response) => response.blob());
  
   try {
     const response = await axios.post(
-      "https://5b9d-34-124-147-214.ngrok.io/process_image/",
+      "https://e673-35-247-133-246.ngrok.io/process_image/",
       formData,
       {
         headers: {

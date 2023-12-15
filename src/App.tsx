@@ -21,8 +21,8 @@ import UploadImage from './components/frontend/uploadImage';
 // C:\Users\Administrator\Documents\GitHub\demo\src\assets\data\image-1701929063924.png
 
 // C:\Users\Administrator\Documents\GitHub\demo\src\assets\data\npyFile-1701929103139.npy
-const IMAGE_PATH = "assets/data/image-1701938880828.jpg";
-const IMAGE_EMBEDDING = "/assets/data/npyFile-1701938918543.npy";
+const IMAGE_PATH = "assets/data/upload.jpg";
+const IMAGE_EMBEDDING = "/assets/data/output.npy";
 
 
 

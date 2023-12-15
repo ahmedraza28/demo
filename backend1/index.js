@@ -51,126 +51,80 @@ app.use(bodyParser.json());
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-      cb(null, '../src/assets/data/temp/')  // Temp folder for initial upload
+    cb(null, '../src/assets/data/uploads/'); // Use a directory with write permissions
   },
   filename: function (req, file, cb) {
       // Use a temporary file name
-      cb(null, 'upload');
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix);
   }
 });
 
-const upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
+    cb(null, true); // Accept the file
+  } else {
+    cb(new Error('Invalid file type. Only JPEG and PNG files are allowed.'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter
+});
 
 app.post('/upload', upload.single('image'), async (req, res) => {
   try {
-      const tempImagePath = req.file.path;
-      const finalImagePath = path.join('../src/assets/data/', 'upload' + '.jpg');
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+    }
 
-      // Convert the uploaded image to JPG format and save it to the final path
-      await sharp(tempImagePath).jpeg().toFile(finalImagePath);
+    const tempImagePath = req.file.path;
 
-      // Attempt to delete the temporary file
-      try {
-          fs.unlinkSync(tempImagePath);
-      } catch (unlinkError) {
-          console.error('Error deleting temporary file:', unlinkError);
-      }
+    // Always save the uploaded image as a JPG
+    const imageType = 'jpg';
 
-      // Create form-data for the external request
-      const formData = new FormData();
-      formData.append('file', fs.createReadStream(finalImagePath));
+    const finalImagePath = path.join('../src/assets/data/', `upload.${imageType}`);
 
-      // Send the request to the external API
-      const externalApiResponse = await axios.post('https://b2skbfxx-8000.euw.devtunnels.ms/process_image/', formData, {
-          headers: formData.getHeaders(),
-          responseType: 'arraybuffer',
-      });
+    // Convert the uploaded image to JPG format and save it to the final path
+    await sharp(tempImagePath).toFormat(imageType).toFile(finalImagePath);
+// attemp delete
+  // Attempt to delete the temporary file with a delay
+  setTimeout(() => {
+    try {
+      fs.unlinkSync(tempImagePath);
+    } catch (unlinkError) {
+      console.error('Error deleting temporary file:', unlinkError);
+    }
+  }, 2000); 
 
-      // Check if the API response contains valid data
-      if (externalApiResponse.status === 200 && externalApiResponse.data) {
-          // Save the received data as a .npy file
-          const npyName = 'output.npy';
-          const npyPath = path.join('../src/assets/data/', npyName);
-          fs.writeFileSync(npyPath, externalApiResponse.data);
+    // Create form-data for the external request
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(finalImagePath));
 
-          // const imgPath = 'https://weshop-backend.onrender.com/files/image/' + path.basename(imagePath);
-          // const nyPath = 'https://weshop-backend.onrender.com/files/npy/' + path.basename(npyPath);
+    // Send the request to the external API
+    const externalApiResponse = await axios.post('https://b2skbfxx-8000.euw.devtunnels.ms/process_image/', formData, {
+      headers: formData.getHeaders(),
+      responseType: 'arraybuffer',
+    });
 
-          // res.send(`${imgPath} image path, ${nyPath} npy path`);
-          res.send("successful")
-      } else {
-          res.status(400).send('Invalid response from the external API');
-      }
+    // Check if the API response contains valid data
+    if (externalApiResponse.status === 200 && externalApiResponse.data) {
+      // Save the received data as a .npy file
+      const npyName = 'output.npy';
+      const npyPath = path.join('../src/assets/data/', npyName);
+      fs.writeFileSync(npyPath, externalApiResponse.data);
+
+      // Send a success response
+      res.send('Successful upload and processing.');
+    } else {
+      res.status(400).send('Invalid response from the external API');
+    }
   } catch (error) {
-      console.error(error);
-      res.status(500).send('Error occurred while processing the file');
+    console.error(error);
+    res.status(500).send('Error occurred while processing the file');
   }
 });
-
-app.post('/upload', upload.single('image'), async (req, res) => {
-    try {
-      const imagePath = req.file.path;
-      const imageName = req.file.originalname;
-  
-      // Create form-data for the external request
-      const formData = new FormData();
-      formData.append('file', fs.createReadStream(imagePath));
-  
-      // Send the request to the external API
-      const externalApiResponse = await axios.post('https://b2skbfxx-8000.euw.devtunnels.ms/process_image/', formData, {
-        headers: formData.getHeaders(),
-        responseType: 'arraybuffer', // Set the response type to 'arraybuffer'
-      });
-  
-      // Check if the API response contains valid data
-      if (externalApiResponse.status === 200 && externalApiResponse.data) {
-        // Save the received data as a .npy file
-        const npyName = 'output'+'.npy';
-        const npyPath = path.join('../src/assets/data/', npyName);
-        console.log(npyPath);
-        fs.writeFileSync(npyPath, externalApiResponse.data);
-  
-        // Store file paths in the database
-        const newFile = new File({
-          imageName: imageName,
-          imagePath: imagePath,
-          npyName: npyName,
-          npyPath: npyPath,
-        });
-        await newFile.save();
-
-        const imgPath = 'https://weshop-backend.onrender.com/files/image/' + path.basename(req.file.path);
-        const nyPath = 'https://weshop-backend.onrender.com/files/npy/' + path.basename(npyPath);
-
-
-  
-        res.send(`${imgPath} image path, ${nyPath} npy path`);
-      } else {
-        res.status(400).send('Invalid response from the external API');
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error occurred while processing the file');
-    }
-  });
-
-app.get('/files', async (req, res) => {
-    try {
-      const files = await File.find();
-      const filePaths = files.map(file => {
-        return {
-          imageName: file.imageName,
-          imagePath: file.imagePath ? file.imagePath.replace(/\\/g, '/') : null, // Check if imagePath exists
-          npyName: file.npyName,
-          npyPath: file.npyPath ? file.npyPath.replace(/\\/g, '/') : null // Check if npyPath exists
-        };
-      });
-      res.json(filePaths);
-    } catch (error) {
-      console.error('Error fetching file list:', error);
-      res.status(500).send('Error occurred while fetching file list');
-    }
-  });
   
   
 // Endpoint to fetch a specific image file

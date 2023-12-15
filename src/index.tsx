@@ -32,7 +32,7 @@ root.render(
     <AppContextProvider>
     <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/edit" element={<Edit />} />
+          <Route path="/Edit" element={<Edit />} />
         </Routes>
     </AppContextProvider>
   </BrowserRouter>
