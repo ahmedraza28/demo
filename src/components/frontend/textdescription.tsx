@@ -3,7 +3,7 @@ import React from 'react';
 const TextDescription: React.FC = () => {
   return (
     <>
-      <div className="container mx-auto pl-10 py-4">
+      {/* <div className="container mx-auto pl-10 py-4">
         <div className="w-36">
           <h2 className="font-semibold text-lg w-full border-b-2 border-[#7530fe]">
             Text Description
@@ -45,7 +45,7 @@ const TextDescription: React.FC = () => {
             achieving a hyper-realistic effect.
           </p>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

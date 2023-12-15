@@ -137,6 +137,7 @@ const Edit = () => {
     
       </Modal>
       <Stage />
+      
     </>
   );
 };

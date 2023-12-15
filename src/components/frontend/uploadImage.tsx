@@ -1,8 +1,9 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
+import React, { useState, ChangeEvent, useEffect ,useContext } from 'react';
 import TextDescription from './textdescription';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { openDB } from 'idb';
+
 
 interface CardDimensions {
   width: number;
@@ -11,12 +12,68 @@ interface CardDimensions {
 
 const aiApiUrl = 'https://b2skbfxx-8000.euw.devtunnels.ms/process_image/';
 
+const getCoordinatesFromLocalStorage = () => {
+  const storedCoordinates = localStorage.getItem("coordinates");
+  if (storedCoordinates) {
+    return JSON.parse(storedCoordinates);
+  }
+  return [];
+};
+
 const UploadImage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [cardDimensions, setCardDimensions] = useState<CardDimensions>({
     width: 400,
     height: 400,
   });
+  const [generatedImageSrc, setGeneratedImageSrc] = useState<string | null>(null); // State for the generated image source
+
+      // const input_points = JSON.stringify(getCoordinatesFromLocalStorage)
+ 
+  const [userInput, setUserInput] = useState<string>(''); 
+  const IMAGE_PATH = "../../assets/data/upload.jpeg";
+  console.log(IMAGE_PATH , "iMMAGE PATH");
+  
+  const handleGenerateClick = async () => {
+    // Capture the user's input and display it in the console
+    console.log( userInput);
+
+// Load the image file
+const imageBlob = await fetch(IMAGE_PATH).then((response) => response.blob());
+
+      // Prepare the data to send in the API request
+  const formData = new FormData();
+  formData.append("image", imageBlob, "upload.jpeg");
+  formData.append("input_points", JSON.stringify(getCoordinatesFromLocalStorage())); // Add coordinates
+  formData.append("prompt", userInput); // Add user input text
+  
+ 
+  try {
+    const response = await axios.post(
+      "https://5b9d-34-124-147-214.ngrok.io/process_image/",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        responseType: "blob",
+      }
+    );
+
+    if (response.status === 200) {
+  console.log(response.data);
+  const imageUrl = URL.createObjectURL(response.data);
+  setGeneratedImageSrc(imageUrl);
+
+    } else {
+      console.error("API Error:", response.statusText);
+    }
+  } catch (error) {
+    console.error("API Request Error:", error);
+  }
+  };
+  // Render the generated image in the JSX
+  const generatedImage = generatedImageSrc && <img src={generatedImageSrc} alt="Generated Image" />;
 
   async function initDB() {
     return openDB('myDatabase', 1, {
@@ -148,7 +205,10 @@ const UploadImage: React.FC = () => {
   };
   
   return (
+    
     <div>
+     
+     
       <div className="flex">
       <div className="flex items-center justify-center w-full mt-10 ml-5">
   <label
@@ -217,7 +277,59 @@ const UploadImage: React.FC = () => {
   </div>
 </div>
       </div>
-      <TextDescription />
+     <div>
+
+     <div className="container mx-auto pl-10 py-4">
+        <div className="w-36">
+          <h2 className="font-semibold text-lg w-full border-b-2 border-[#7530fe]">
+            Text Description
+          </h2>
+        </div>
+
+        <div className="w-full mt-4">
+          <textarea
+            id="message"
+            rows={4}
+            className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Write your thoughts here..."
+
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+          ></textarea>
+          <button type="submit"  onClick={handleGenerateClick}  className='text-white bg-[#7530fe] p-3 rounded-xl my-2'>Generate</button>
+        </div>
+
+        <div className="py-4">
+          <h3 className="font-semibold">
+            Describe the image you want to generate, in ANY language, for
+            example:
+          </h3>
+          <ul className="list-disc px-3">
+            <li>A girl wearing a floral sundress walks on the streets of Tokyo</li>
+          </ul>
+          <h4 className="font-semibold py-5">
+            You can also provide extremely detailed descriptions of elements such
+            as characters, locations, actions, time, weather, environment, props,
+            atmosphere, etc., and simultaneously specify the shooting technique,
+            such as “shot with an iPhone, gaze directed at the camera, deep depth
+            of field.“
+          </h4>
+          <h1 className="text-2xl font-bold mb-4">Example 1</h1>
+          <p className="text-gray-700">
+            A young Chinese woman with voluminous golden short hair, tattoos,
+            exquisitely detailed skin, lifelike detailed eyes, natural skin
+            texture, a confident expression, and stylish hip-hop attire, is
+            walking outdoors against the backdrop of urban ruins. It's a sunny
+            day, with bright sunlight during a summer afternoon. The focus is
+            clear, and the image is of high quality, shot with an iPhone,
+            achieving a hyper-realistic effect.
+          </p>
+        </div>
+        <div>
+        {generatedImage}
+        </div>
+      </div>
+     </div>
     </div>
   );
 };
